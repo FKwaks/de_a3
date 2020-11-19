@@ -1,0 +1,5 @@
+pyarrow
+numpy
+pandas
+scikit-learn
+kfp>=1.1.1
