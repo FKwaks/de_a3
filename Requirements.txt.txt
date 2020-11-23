@@ -1,5 +1,6 @@
-pyarrow
+fastparquet
 numpy
 pandas
 scikit-learn
+scipy
 kfp>=1.1.1
