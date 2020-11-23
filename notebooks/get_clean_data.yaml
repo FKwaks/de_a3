@@ -20,13 +20,10 @@ implementation:
     - -c
     - "def get_clean_data(raw_data_path, cleaned_data_path):\n    '''Hier moet de\
       \ data import komen'''\n    import pandas as pd\n\n    #raw data import\n  \
-      \  data = pd.read_csv(raw_data_path, sep=\" \", header=None)\n\n    data.columns\
-      \ = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',\
-      \ 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14', 's15',\
-      \ 's16', 's17', 's18', 's19', 's20', 's21', 'NA', 'NA']\n    del data['NA']\n\
-      \n    # Creating and adding the RUL to the dataframe\n    RUL_list = []\n  \
-      \  for engine in set(data['engine_id']):\n        max_cycle = data.loc[data['engine_id']\
-      \ == engine].cycle.max()\n\n        for cycle in list(data.loc[data['engine_id']\
+      \  data = pd.read_parquet(raw_data_path, sep=\" \", header=None)\n\n    # Creating\
+      \ and adding the RUL to the dataframe\n    RUL_list = []\n    for engine in\
+      \ set(data['engine_id']):\n        max_cycle = data.loc[data['engine_id'] ==\
+      \ engine].cycle.max()\n\n        for cycle in list(data.loc[data['engine_id']\
       \ == engine].cycle):\n            RUL_list.append(max_cycle - cycle +1)    \n\
       \n    data.insert(2, 'RUL', RUL_list)\n    data.to_parquet(cleaned_data_path,\
       \ compression='GZIP')\n\n    return cleaned_data_path\n\ndef _serialize_str(str_value:\
