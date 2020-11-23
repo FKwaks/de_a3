@@ -1,0 +1,52 @@
+name: Get clean data
+description: Hier moet de data import komen
+inputs:
+- {name: raw_data_path, type: String}
+- {name: cleaned_data_path, type: String}
+outputs:
+- {name: Output, type: String}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'fastparquet' 'fsspec' 'gcfs' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+      pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec' 'gcfs'
+      --user) && "$0" "$@"
+    - python3
+    - -u
+    - -c
+    - "def get_clean_data(raw_data_path, cleaned_data_path):\n    '''Hier moet de\
+      \ data import komen'''\n    import pandas as pd\n\n    #raw data import\n  \
+      \  data = pd.read_csv(raw_data_path, sep=\" \", header=None)\n\n    data.columns\
+      \ = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',\
+      \ 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14', 's15',\
+      \ 's16', 's17', 's18', 's19', 's20', 's21', 'NA', 'NA']\n    del data['NA']\n\
+      \n    # Creating and adding the RUL to the dataframe\n    RUL_list = []\n  \
+      \  for engine in set(data['engine_id']):\n        max_cycle = data.loc[data['engine_id']\
+      \ == engine].cycle.max()\n\n        for cycle in list(data.loc[data['engine_id']\
+      \ == engine].cycle):\n            RUL_list.append(max_cycle - cycle +1)    \n\
+      \n    data.insert(2, 'RUL', RUL_list)\n    data.to_parquet(cleaned_data_path,\
+      \ compression='GZIP')\n\n    return cleaned_data_path\n\ndef _serialize_str(str_value:\
+      \ str) -> str:\n    if not isinstance(str_value, str):\n        raise TypeError('Value\
+      \ \"{}\" has type \"{}\" instead of str.'.format(str(str_value), str(type(str_value))))\n\
+      \    return str_value\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Get\
+      \ clean data', description='Hier moet de data import komen')\n_parser.add_argument(\"\
+      --raw-data-path\", dest=\"raw_data_path\", type=str, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"--cleaned-data-path\", dest=\"cleaned_data_path\", type=str,\
+      \ required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\"\
+      , dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n\
+      _output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = get_clean_data(**_parsed_args)\n\
+      \n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_str,\n\n\
+      ]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n\
+      \        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n  \
+      \      pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+    args:
+    - --raw-data-path
+    - {inputValue: raw_data_path}
+    - --cleaned-data-path
+    - {inputValue: cleaned_data_path}
+    - '----output-paths'
+    - {outputPath: Output}

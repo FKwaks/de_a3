@@ -1,0 +1,88 @@
+name: Feature processing
+inputs:
+- {name: raw_data_path, type: String}
+- {name: feature_data_path, type: String}
+outputs:
+- {name: Output, type: String}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'fastparquet' 'fsspec' 'gcfs' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+      pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec' 'gcfs'
+      --user) && "$0" "$@"
+    - python3
+    - -u
+    - -c
+    - |
+      def feature_processing(raw_data_path, feature_data_path):
+          import pandas as pd
+          from sklearn.cluster import KMeans
+
+          data = pd.read_parquet(raw_data_path)
+
+          engine = data.iloc[:,0].to_list()
+          cycle = data.iloc[:,1].to_list()
+
+          # Clustering the data
+          X_cluster = data[['setting1', 'setting2', 'setting3']]
+
+          # creates the clusters
+          kmeans = KMeans(n_clusters=3).fit(X_cluster)
+          data['settings_clusters'] = kmeans.predict(X_cluster)
+
+          features = data.columns[3:-1]
+          for feature in features:
+              # Creating min, max and delta variables
+              data['max_' + feature] = data.groupby('engine_id')[feature].cummax()
+              data['min_' + feature] = data.groupby('engine_id')[feature].cummin()
+
+              data['delta_' + feature] = data.groupby('engine_id')[feature].diff()
+              data['delta_' + feature].fillna(0, inplace=True)
+
+          data.to_parquet(feature_data_path, compression='GZIP')
+
+          print('Created an saved features.')
+
+          return feature_data_path
+
+      def _serialize_str(str_value: str) -> str:
+          if not isinstance(str_value, str):
+              raise TypeError('Value "{}" has type "{}" instead of str.'.format(str(str_value), str(type(str_value))))
+          return str_value
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Feature processing', description='')
+      _parser.add_argument("--raw-data-path", dest="raw_data_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--feature-data-path", dest="feature_data_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = feature_processing(**_parsed_args)
+
+      _outputs = [_outputs]
+
+      _output_serializers = [
+          _serialize_str,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --raw-data-path
+    - {inputValue: raw_data_path}
+    - --feature-data-path
+    - {inputValue: feature_data_path}
+    - '----output-paths'
+    - {outputPath: Output}

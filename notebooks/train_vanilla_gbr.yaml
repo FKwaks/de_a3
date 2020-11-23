@@ -1,0 +1,71 @@
+name: Train vanilla gbr
+inputs:
+- {name: feature_data_path, type: String}
+- {name: vanilla_model_store_path, type: String}
+- {name: holdout_engine, type: Integer}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'fastparquet' 'fsspec' 'gcfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec'
+      'gcfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
+    - python3
+    - -u
+    - -c
+    - |
+      def train_vanilla_gbr(feature_data_path, vanilla_model_store_path, holdout_engine):
+          import pandas as pd
+          import _pickle as cPickle
+          from google.cloud import storage
+          from urlib.parse import urlparse
+          from sklearn.model_selection import train_test_split
+          from sklearn import ensemble
+          from sklearn import metrics
+
+          data = pd.read_parquet(feature_data_path)
+
+          RUL_df = data.loc[data.engine_id != holdout_engine].iloc[:,2:].copy()
+
+          labels = RUL_df['RUL']
+          features = RUL_df.iloc[:,1:]
+          X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size = 0.2, random_state = 42)
+
+          gbr_non_opt = ensemble.GradientBoostingRegressor()
+          gbr_non_opt.fit(X_train, y_train)
+
+          pred_non_opt = gbr_non_opt.predict(X_test)
+          print('MAE: %s' % metrics.mean_absolute_error(y_test, pred_non_opt))
+          print('MSE: %s' % metrics.mean_squared_error(y_test, pred_non_opt))
+
+          with open('/tmp/model.pickle', 'wb') as f:
+              cPickle.dump(gbr_non_opt, f, -1)
+
+          parse = urlparse(url=vanilla_model_store_path, allow_fragments = False)
+          if parse.path[0] == '/':
+              model_path = parse.path[1:]
+          client = storage.Client()
+          bucket = client.get_bucket(parse.netloc)
+          blob = bucket.blob(model_path)
+          blob.upload_from_filename('/tmp/model.pickle')
+
+          return vanilla_model_store_path
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Train vanilla gbr', description='')
+      _parser.add_argument("--feature-data-path", dest="feature_data_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--vanilla-model-store-path", dest="vanilla_model_store_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--holdout-engine", dest="holdout_engine", type=int, required=True, default=argparse.SUPPRESS)
+      _parsed_args = vars(_parser.parse_args())
+
+      _outputs = train_vanilla_gbr(**_parsed_args)
+    args:
+    - --feature-data-path
+    - {inputValue: feature_data_path}
+    - --vanilla-model-store-path
+    - {inputValue: vanilla_model_store_path}
+    - --holdout-engine
+    - {inputValue: holdout_engine}

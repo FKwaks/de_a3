@@ -1,0 +1,75 @@
+name: Hyp tune train gbr
+inputs:
+- {name: feature_data_path, type: String}
+- {name: tuned_model_store_path, type: String}
+- {name: holdout_engine, type: Integer}
+- {name: random_iterations, type: Integer}
+- {name: random_params, type: String}
+outputs:
+- {name: Output, type: String}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'fastparquet' 'fsspec' 'gcfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec'
+      'gcfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
+    - python3
+    - -u
+    - -c
+    - "def hyp_tune_train_gbr(feature_data_path, tuned_model_store_path,\n       \
+      \                holdout_engine, random_iterations, \n                     \
+      \  random_params):\n    import json\n    import pandas as pd\n    import _pickle\
+      \ as cPickle\n    from google.cloud import storage\n    from urlib.parse import\
+      \ urlparse\n    from sklearn.model_selection import train_test_split, RandomizedSearchCV\n\
+      \    from sklearn import ensemble\n    from sklearn import metrics\n\n    data\
+      \ = pd.read_parquet(feature_data_path)\n\n    RUL_df = data.loc[data.engine_id\
+      \ != holdout_engine].iloc[:,2:].copy()\n\n    labels = RUL_df['RUL']\n    features\
+      \ = RUL_df.iloc[:,1:]\n    X_train, X_test, y_train, y_test = train_test_split(features,\
+      \ labels, test_size = 0.2, random_state = 42)\n\n    random_grid = json.loads(random_params)\n\
+      \n    gbr = ensemble.GradientBoostingRegressor()\n    gbr_random = RandomizedSearchCV(estimator\
+      \ = gbr, param_distributions = random_grid, n_iter = 10, cv = 3, verbose = 2)\n\
+      \    gbr_random.fit(X_train, y_train)\n\n    val_pred_random = gbr_random.predict(X_test)\n\
+      \    MAE_random = metrics.mean_absolute_error(y_test, val_pred_random)\n   \
+      \ MSE_random = metrics.mean_squared_error(y_test, val_pred_random)\n    print('MAE:\
+      \ %s' % MAE_random)\n    print('MSE: %s' % MSE_random)\n\n    temp_model_path\
+      \ = '/tmp/model.pickle'\n\n    with open(temp_model_path, 'wb') as f:\n    \
+      \    cPickle.dump(gbr_random.best_estimator_, f, -1)\n\n    parse = urlparse(url=tuned_model_store_path,\
+      \ allow_fragments = False)\n    if parse.path[0] =='/':\n        model_path\
+      \ = parse.path[1:]\n    client = storage.Client()\n    bucket = client.get_bucket(parse.netloc)\n\
+      \    model = bucket.blob(model_path)\n    model.upload_from_filename(temp_model_path)\n\
+      \n    return tuned_model_store_path\n\ndef _serialize_str(str_value: str) ->\
+      \ str:\n    if not isinstance(str_value, str):\n        raise TypeError('Value\
+      \ \"{}\" has type \"{}\" instead of str.'.format(str(str_value), str(type(str_value))))\n\
+      \    return str_value\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Hyp\
+      \ tune train gbr', description='')\n_parser.add_argument(\"--feature-data-path\"\
+      , dest=\"feature_data_path\", type=str, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"--tuned-model-store-path\", dest=\"tuned_model_store_path\"\
+      , type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+      --holdout-engine\", dest=\"holdout_engine\", type=int, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"--random-iterations\", dest=\"random_iterations\", type=int,\
+      \ required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--random-params\"\
+      , dest=\"random_params\", type=str, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str,\
+      \ nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"\
+      _output_paths\", [])\n\n_outputs = hyp_tune_train_gbr(**_parsed_args)\n\n_outputs\
+      \ = [_outputs]\n\n_output_serializers = [\n    _serialize_str,\n\n]\n\nimport\
+      \ os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n\
+      \    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n\
+      \        f.write(_output_serializers[idx](_outputs[idx]))\n"
+    args:
+    - --feature-data-path
+    - {inputValue: feature_data_path}
+    - --tuned-model-store-path
+    - {inputValue: tuned_model_store_path}
+    - --holdout-engine
+    - {inputValue: holdout_engine}
+    - --random-iterations
+    - {inputValue: random_iterations}
+    - --random-params
+    - {inputValue: random_params}
+    - '----output-paths'
+    - {outputPath: Output}
