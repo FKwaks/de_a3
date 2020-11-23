@@ -12,8 +12,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'fastparquet' 'fsspec' 'gcfs' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
-      pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec' 'gcfs'
+      'fastparquet' 'fsspec' 'gcsfs' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+      pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec' 'gcsfs'
       --user) && "$0" "$@"
     - python3
     - -u

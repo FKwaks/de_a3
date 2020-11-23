@@ -3,8 +3,6 @@ inputs:
 - {name: feature_data_path, type: String}
 - {name: vanilla_model_store_path, type: String}
 - {name: holdout_engine, type: Integer}
-outputs:
-- {name: Output, type: String}
 implementation:
   container:
     image: python:3.7
@@ -12,9 +10,9 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'fastparquet' 'fsspec' 'gcsfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      'fastparquet' 'fsspec' 'gcfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
       python3 -m pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec'
-      'gcsfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
+      'gcfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
     - python3
     - -u
     - -c
@@ -43,52 +41,27 @@ implementation:
           print('MAE: %s' % metrics.mean_absolute_error(y_test, pred_non_opt))
           print('MSE: %s' % metrics.mean_squared_error(y_test, pred_non_opt))
 
-          temp_model_path = '/tmp/model.pickle'
-
-          with open(temp_model_path, 'wb') as f:
+          with open('/tmp/model.pickle', 'wb') as f:
               cPickle.dump(gbr_non_opt, f, -1)
 
           parse = urlparse(url=vanilla_model_store_path, allow_fragments = False)
-          if parse.path[0] =='/':
+          if parse.path[0] == '/':
               model_path = parse.path[1:]
           client = storage.Client()
           bucket = client.get_bucket(parse.netloc)
-          model = bucket.blob(model_path)
-          model.upload_from_filename(temp_model_path)
+          blob = bucket.blob(model_path)
+          blob.upload_from_filename('/tmp/model.pickle')
 
           return vanilla_model_store_path
-
-      def _serialize_str(str_value: str) -> str:
-          if not isinstance(str_value, str):
-              raise TypeError('Value "{}" has type "{}" instead of str.'.format(str(str_value), str(type(str_value))))
-          return str_value
 
       import argparse
       _parser = argparse.ArgumentParser(prog='Train vanilla gbr', description='')
       _parser.add_argument("--feature-data-path", dest="feature_data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--vanilla-model-store-path", dest="vanilla_model_store_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--holdout-engine", dest="holdout_engine", type=int, required=True, default=argparse.SUPPRESS)
-      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
       _parsed_args = vars(_parser.parse_args())
-      _output_files = _parsed_args.pop("_output_paths", [])
 
       _outputs = train_vanilla_gbr(**_parsed_args)
-
-      _outputs = [_outputs]
-
-      _output_serializers = [
-          _serialize_str,
-
-      ]
-
-      import os
-      for idx, output_file in enumerate(_output_files):
-          try:
-              os.makedirs(os.path.dirname(output_file))
-          except OSError:
-              pass
-          with open(output_file, 'w') as f:
-              f.write(_output_serializers[idx](_outputs[idx]))
     args:
     - --feature-data-path
     - {inputValue: feature_data_path}
@@ -96,5 +69,3 @@ implementation:
     - {inputValue: vanilla_model_store_path}
     - --holdout-engine
     - {inputValue: holdout_engine}
-    - '----output-paths'
-    - {outputPath: Output}

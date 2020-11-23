@@ -14,9 +14,9 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'fastparquet' 'fsspec' 'gcsfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      'fastparquet' 'fsspec' 'gcfs' 'scikit-learn' 'google-cloud-storage' || PIP_DISABLE_PIP_VERSION_CHECK=1
       python3 -m pip install --quiet --no-warn-script-location 'fastparquet' 'fsspec'
-      'gcsfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
+      'gcfs' 'scikit-learn' 'google-cloud-storage' --user) && "$0" "$@"
     - python3
     - -u
     - -c

@@ -3,7 +3,7 @@ description: Evaluate different models on holdout dataset to see which model per
   the best
 inputs:
 - {name: feature_data_path, type: String}
-- {name: vanilla_model_store_path, type: String}
+- {name: vanilla_model_store_path}
 - {name: tuned_model_store_path, type: String}
 - {name: holdout_engine, type: Integer}
 implementation:
