@@ -23,7 +23,7 @@ implementation:
           import pandas as pd
           import _pickle as cPickle
           from google.cloud import storage
-          from urlib.parse import urlparse
+          from urllib.parse import urlparse
           from sklearn.model_selection import train_test_split
           from sklearn import ensemble
           from sklearn import metrics

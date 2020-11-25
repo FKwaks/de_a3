@@ -23,7 +23,7 @@ implementation:
     - "def hyp_tune_train_gbr(feature_data_path, tuned_model_store_path,\n       \
       \                holdout_engine, random_iterations, \n                     \
       \  random_params):\n    import json\n    import pandas as pd\n    import _pickle\
-      \ as cPickle\n    from google.cloud import storage\n    from urlib.parse import\
+      \ as cPickle\n    from google.cloud import storage\n    from urllib.parse import\
       \ urlparse\n    from sklearn.model_selection import train_test_split, RandomizedSearchCV\n\
       \    from sklearn import ensemble\n    from sklearn import metrics\n\n    data\
       \ = pd.read_parquet(feature_data_path)\n\n    RUL_df = data.loc[data.engine_id\
