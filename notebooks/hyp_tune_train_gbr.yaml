@@ -28,7 +28,7 @@ implementation:
       \    from sklearn import ensemble\n    from sklearn import metrics\n\n    data\
       \ = pd.read_parquet(feature_data_path)\n\n    RUL_df = data.loc[data.engine_id\
       \ != holdout_engine].iloc[:,2:].copy()\n\n    labels = RUL_df['RUL']\n    features\
-      \ = RUL_df.iloc[:,1:]\n    X_train, X_test, y_train, y_test = train_test_split(features,\
+      \ = RUL_df.iloc[:,2:]\n    X_train, X_test, y_train, y_test = train_test_split(features,\
       \ labels, test_size = 0.2, random_state = 42)\n\n    random_grid = json.loads(random_params)\n\
       \n    gbr = ensemble.GradientBoostingRegressor()\n    gbr_random = RandomizedSearchCV(estimator\
       \ = gbr, param_distributions = random_grid, n_iter = 10, cv = 3, verbose = 2)\n\

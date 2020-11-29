@@ -20,7 +20,6 @@ implementation:
     - |
       def feature_processing(cleaned_data_path, feature_data_path):
           import pandas as pd
-          from sklearn.cluster import KMeans
 
           data = pd.read_parquet(cleaned_data_path)
 
