@@ -21,7 +21,7 @@ def predict_perf():
     df = pd.read_json(json.dumps(content), orient='records')
     df_features = feature_engineer.clean_data(df)
     
-    model_store_path = 'gs://de_a3/model_store/tuned/tuned_gbr.pickle'
+    model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
     parse = urlparse(url=model_store_path, allow_fragments = False)
     if parse.path[0] =='/':

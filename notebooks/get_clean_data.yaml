@@ -20,8 +20,8 @@ implementation:
     - -c
     - "def get_clean_data(raw_data_path, cleaned_data_path):\n    '''Hier moet de\
       \ data import komen'''\n    import pandas as pd\n    from google.cloud import\
-      \ storage\n    import io\n\n    client = storage.Client()\n    bucket = client.get_bucket('de_a3')\n\
-      \    blob = bucket.get_blob('data/datatrain.txt')\n    data_string = blob.download_as_text()\n\
+      \ storage\n    import io\n\n    client = storage.Client()\n    bucket = client.get_bucket('de_a3v2')\n\
+      \    blob = bucket.get_blob('data/DataTrain.txt')\n    data_string = blob.download_as_text()\n\
       \n    print('hoi')\n\n    raw_data = io.StringIO(data_string)\n\n    #raw data\
       \ import\n    data = pd.read_csv(raw_data, sep=\" \", header=None)\n    data.columns\
       \ = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',\

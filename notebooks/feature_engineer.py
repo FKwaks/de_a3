@@ -1,9 +1,7 @@
 import json
 import os
-
-from keras.models import load_model
 import pickle
-from sklearn.cluster import KMeans
+
 
 def clean_data(dataset):
     X = dataset[dataset.columns[2:]]
