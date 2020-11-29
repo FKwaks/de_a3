@@ -19,7 +19,7 @@ def test():
 @app.route('/predict/', methods=['POST'])
 def predict_perf():
     content = request.get_json()
-    df = pd.read_json(json.dumps(content).decode('utf-8'), orient='records')
+    df = pd.read_json(json.dumps(content), orient='records')
     df_features = feature_engineer.clean_data(df)
     
     model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
@@ -37,7 +37,9 @@ def predict_perf():
     
     x_predict = df_features[df_features.columns[2:]]
     js = model.predict(x_predict)
-    resp = Response(js, status=200, mimetype='application/json')
+    js = {'resp': js}
+    js = json.dumps(js).decode('utf-8')
+    resp = Response(stream_with_context(js), status=200, mimetype='application/json')
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'
     resp.headers['Access-Control-Max-Age'] = '1000'
