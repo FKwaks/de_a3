@@ -39,7 +39,7 @@ def predict_perf():
     js = list(model.predict(x_predict))
     js = {'resp': js}
     js = json.dumps(js)
-    resp = Response(stream_with_context(js), status=200, mimetype='application/json')
+    resp = Response(js, status=200, mimetype='application/json')
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'
     resp.headers['Access-Control-Max-Age'] = '1000'
