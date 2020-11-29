@@ -3,6 +3,7 @@ from flask import Flask, json, request, Response
 import _pickle as cPickle
 from google.cloud import storage
 from urllib.parse import urlparse
+from io import BytesIO
 
 
 from notebooks import feature_engineer
