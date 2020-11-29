@@ -36,11 +36,12 @@ def predict_perf():
     model = cPickle.load(model_bytestream)
     
     x_predict = df_features[df_features.columns[2:]]
-    #js = model.predict(x_predict)
-    #resp = Response(stream_with_context(js), status=200, mimetype='application/json')
-    #resp.headers['Access-Control-Allow-Origin'] = '*'
-    #resp.headers['Access-Control-Allow-Methods'] = 'POST'
-    #resp.headers['Access-Control-Max-Age'] = '1000'
-    return Response(stream_with_context(model.predict(x_predict)))
+    js = model.predict(x_predict)
+    js = json.dumps(js).decode('utf-8')
+    resp = Response(stream_with_context(js), status=200, mimetype='application/json')
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
+    resp.headers['Access-Control-Max-Age'] = '1000'
+    return resp
 
 app.run(host='0.0.0.0', port=5000)
