@@ -20,7 +20,6 @@ def test():
 def predict_perf():
     content = request.get_json()
     df = pd.read_json(json.dumps(content), orient='records')
-    print(df.head())
     df_features = feature_engineer.clean_data(df)
     
     
@@ -38,6 +37,7 @@ def predict_perf():
     model = cPickle.load(model_bytestream)
     
     x_predict = df_features[df_features.columns[2:]]
+    print(x_predict)
     js = list(model.predict(x_predict))
     js = {'resp': js}
     js = json.dumps(js)
