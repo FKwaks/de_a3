@@ -37,8 +37,9 @@ def predict_perf():
     model = cPickle.loads(model_bytestream)
 
     x_predict = df_features[df_features.columns[2:]]
-    print(model.feature_importances_)
     js = list(model.predict(x_predict))
+    print(x_predict)
+    print(model.predict(x_predict))
     js = {'resp': js}
     js = json.dumps(js)
     resp = Response(js, status=200, mimetype='application/json')
