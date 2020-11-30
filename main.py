@@ -23,7 +23,7 @@ def predict_perf():
     df_features = feature_engineer.clean_data(df)
     
     
-    model_store_path = 'gs://de_a3v2/model_store/tuned/tuned_gbr.pickle'
+    model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
     parse = urlparse(url=model_store_path, allow_fragments = False)
     if parse.path[0] =='/':
@@ -37,6 +37,7 @@ def predict_perf():
     model = cPickle.loads(model_bytestream)
 
     x_predict = df_features[df_features.columns[2:]]
+    print(x_predict)
     js = list(model.predict(x_predict))
     js = {'resp': js}
     js = json.dumps(js)
