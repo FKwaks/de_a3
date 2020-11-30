@@ -21,6 +21,7 @@ def predict_perf():
     content = request.get_json()
     df = pd.read_json(json.dumps(content), orient='records')
     df_features = feature_engineer.clean_data(df)
+    print(df_features.head())
     
     model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
@@ -43,6 +44,6 @@ def predict_perf():
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'
     resp.headers['Access-Control-Max-Age'] = '1000'
-    return content
+    return resp
 
 app.run(host='0.0.0.0', port=5000)
