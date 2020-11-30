@@ -36,7 +36,7 @@ def predict_perf():
     #model_bytestream = BytesIO(blob.download_as_string())
     buffer = BytesIO()
     buffer.seek(0)
-    model_bytestream = blob.download_to_file(buffer)
+    model_bytestream = blob.download_as_string(buffer)
     model = cPickle.load(model_bytestream)
     
     x_predict = df_features[df_features.columns[2:]]
