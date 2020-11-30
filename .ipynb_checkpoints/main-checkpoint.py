@@ -23,7 +23,7 @@ def predict_perf():
     df_features = feature_engineer.clean_data(df)
     
     
-    model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
+    model_store_path = 'gs://de_a3v2/model_store/tuned/tuned_gbr.pickle'
     
     parse = urlparse(url=model_store_path, allow_fragments = False)
     if parse.path[0] =='/':
@@ -33,7 +33,6 @@ def predict_perf():
     blob = bucket.get_blob(model_path)
     if blob is None:
         raise AttributeError('No files to download') 
-    #model_bytestream = BytesIO(blob.download_as_string())
     model_bytestream = blob.download_as_string()
     model = cPickle.loads(model_bytestream)
 
