@@ -37,9 +37,7 @@ def predict_perf():
     model_bytestream.seek(0)
     print(model_bytestream.tell())
     model = cPickle.load(model_bytestream)
-    
-    print(model.get_params())
-    
+    model.seek(0)
     x_predict = df_features[df_features.columns[2:]]
     js = list(model.predict(x_predict))
     js = {'resp': js}
