@@ -32,17 +32,9 @@ def predict_perf():
     blob = bucket.get_blob(model_path)
     if blob is None:
         raise AttributeError('No files to download')
-    buffer = io.BytesIO()
+    buffer = BytesIO()
     model_bytestream = blob.download_to_file(buffer)
     model = cPickle.load(model_bytestream) 
-    
-
-
-
-    
-    
-    
-    
     
     x_predict = df_features[df_features.columns[2:]]
     js = list(model.predict(x_predict))
