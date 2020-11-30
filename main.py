@@ -38,8 +38,10 @@ def predict_perf():
     
     x_predict = df_features[df_features.columns[2:]]
     js = list(model.predict(x_predict))
+    print(js)
     js = {'resp': js}
     js = json.dumps(js)
+    print(js)
     resp = Response(js, status=200, mimetype='application/json')
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'
