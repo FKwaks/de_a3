@@ -22,6 +22,7 @@ def predict_perf():
     df = pd.read_json(json.dumps(content), orient='records')
     df_features = feature_engineer.clean_data(df)
     
+    
     model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
     parse = urlparse(url=model_store_path, allow_fragments = False)
@@ -31,11 +32,10 @@ def predict_perf():
     bucket = client.get_bucket(parse.netloc)
     blob = bucket.get_blob(model_path)
     if blob is None:
-        raise AttributeError('No files to download')
-    buffer = BytesIO()
-    model_bytestream = blob.download_to_file(buffer)
-    buffer.seek(0)
-    model = cPickle.loads(model_bytestream) 
+        raise AttributeError('No files to download') 
+    model_bytestream = BytesIO(blob.download_as_string())
+    model_bytestream.seek(0)
+    model = cPickle.load(model_bytestream)
     
     x_predict = df_features[df_features.columns[2:]]
     js = list(model.predict(x_predict))
