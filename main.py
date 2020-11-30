@@ -25,6 +25,7 @@ def predict_perf():
     
     model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
+    '''
     parse = urlparse(url=model_store_path, allow_fragments = False)
     if parse.path[0] =='/':
         model_path = parse.path[1:]
@@ -35,9 +36,11 @@ def predict_perf():
         raise AttributeError('No files to download') 
     model_bytestream = BytesIO(blob.download_as_string())
     model = cPickle.load(model_bytestream)
+    '''
+    
+    model = cPickle.load(open(model_store_path, 'rb'))
     
     x_predict = df_features[df_features.columns[2:]]
-    print(model.predict(x_predict))
     js = list(model.predict(x_predict))
     js = {'resp': js}
     js = json.dumps(js)
