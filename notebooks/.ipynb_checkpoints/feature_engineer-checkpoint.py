@@ -1,10 +1,11 @@
 import json
 import os
 import pickle
+import copy 
 
 
 def clean_data(dataset):
-    X = dataset[dataset.columns[2:]]
+    X = dataset[dataset.columns[2:]].copy()
     engine = dataset.iloc[:,0].to_list()
     cycle = dataset.iloc[:,1].to_list()
 
