@@ -43,6 +43,6 @@ def predict_perf():
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'
     resp.headers['Access-Control-Max-Age'] = '1000'
-    return js
+    return content
 
 app.run(host='0.0.0.0', port=5000)
