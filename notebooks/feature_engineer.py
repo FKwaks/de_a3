@@ -8,7 +8,7 @@ def clean_data(dataset):
     engine = dataset.iloc[:,0].to_list()
     cycle = dataset.iloc[:,1].to_list()
 
-    features = dataset.columns[2:]
+    features = dataset[dataset.columns[2:]]
     for feature in features:
         # Creating min, max and delta variables
         X['max_' + feature] = dataset.groupby('engine_id')[feature].cummax()
