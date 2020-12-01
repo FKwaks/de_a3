@@ -1,8 +1,9 @@
 import pandas as pd
-from flask import Flask, json, request, Response
+from flask import Flask, json, request, Response, stream_with_context
 import _pickle as cPickle
 from google.cloud import storage
 from urllib.parse import urlparse
+from io import BytesIO
 
 
 from notebooks import feature_engineer
@@ -21,6 +22,7 @@ def predict_perf():
     df = pd.read_json(json.dumps(content), orient='records')
     df_features = feature_engineer.clean_data(df)
     
+    
     model_store_path = 'gs://de_a3v2/model_store/vanilla/vanilla_gbr.pickle'
     
     parse = urlparse(url=model_store_path, allow_fragments = False)
@@ -31,11 +33,15 @@ def predict_perf():
     blob = bucket.get_blob(model_path)
     if blob is None:
         raise AttributeError('No files to download') 
-    model_bytestream = BytesIO(blob.download_as_string())
-    model = cPickle.load(model_bytestream)
-    
+    model_bytestream = blob.download_as_string()
+    model = cPickle.loads(model_bytestream)
+
     x_predict = df_features[df_features.columns[2:]]
-    js = model.predict(x_predict)
+    js = list(model.predict(x_predict))
+    print(x_predict)
+    print(model.predict(x_predict))
+    js = {'resp': js}
+    js = json.dumps(js)
     resp = Response(js, status=200, mimetype='application/json')
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Methods'] = 'POST'

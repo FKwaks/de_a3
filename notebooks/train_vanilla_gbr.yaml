@@ -28,6 +28,7 @@ implementation:
           from sklearn import ensemble
           from sklearn import metrics
 
+          print('niks')
           data = pd.read_parquet(feature_data_path)
 
           RUL_df = data.loc[data.engine_id != holdout_engine].iloc[:,2:].copy()

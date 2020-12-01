@@ -20,7 +20,6 @@ implementation:
     - |
       def feature_processing(cleaned_data_path, feature_data_path):
           import pandas as pd
-          from sklearn.cluster import KMeans
 
           data = pd.read_parquet(cleaned_data_path)
 
@@ -30,11 +29,7 @@ implementation:
           # Clustering the data
           X_cluster = data[['setting1', 'setting2', 'setting3']]
 
-      #     # creates the clusters
-      #     kmeans = KMeans(n_clusters=3).fit(X_cluster)
-      #     data['settings_clusters'] = kmeans.predict(X_cluster)
-
-          features = data.columns[3:-1]
+          features = data.columns[3:]
           for feature in features:
               # Creating min, max and delta variables
               data['max_' + feature] = data.groupby('engine_id')[feature].cummax()
